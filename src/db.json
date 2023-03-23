@@ -1,0 +1,18 @@
+{ 
+	"deck_name" : { 
+		"infor" : { 
+			"total": 123,
+			"win": 90,
+			"lose": 33,
+			"tie": 0,
+			"cube": -1
+		},
+		"log": [ 
+			{ 
+				"who": "who",
+				"state": "win or lost or tie",
+				"cube": -4
+			}
+		]
+	}
+}
