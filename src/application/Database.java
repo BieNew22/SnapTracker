@@ -12,10 +12,14 @@ package application;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 
 class Deck {
@@ -38,21 +42,30 @@ class Deck {
 		}
 		
 		// test print
-		System.out.println(id + " " + name);
-		for (int i = 0 ; i < cardList.size(); i++) {
-			System.out.println(cardList.get(i));
+//		System.out.println(id + " " + name);
+//		for (int i = 0 ; i < cardList.size(); i++) {
+//			System.out.println(cardList.get(i));
+//		}
+	}
+	
+	public boolean checkId(String find) {
+		if (id.equals(find)) {
+			return true;
 		}
+		return false;
 	}
 }
 
 public class Database {
 	private static Database instance = new Database();
 	
-	private JsonNode userDB = null;
+	private ObjectNode userDB = null;
 	
 	private ArrayList<Deck> deckList = new ArrayList<>();
 	
-	private String userSelectedDeck = null; //PlayState.json -> SelectedDeckId
+	private String selectedDeckId = null; //PlayState.json -> SelectedDeckId
+	
+	private int[] matches = new int[3]; // 0 : win, 1 : lose, 2 : tie
 	
 	private Database() {}
 	
@@ -65,10 +78,7 @@ public class Database {
 		ObjectMapper mapper = new ObjectMapper();
 		
 		// initialization user userDB information
-		userDB = openJson(mapper, "./src/db.json");
-		
-		System.out.println(userDB);
-		System.out.println(userDB.at("/deck_name/infor/total").asInt());
+		userDB = (ObjectNode) openJson(mapper, "./src/db.json");
 		
 		//--- initialization data from marvel snap AppData ---//
 		String dir =  System.getProperty("user.dir").split("Desktop")[0] + "AppData/LocalLow/Second Dinner/"
@@ -77,13 +87,28 @@ public class Database {
 		dir =  System.getProperty("user.dir").split("Desktop")[0] + "Downloads";
 		
 		// 1. read deck information
-		// open & and get Deck list(ArrayNode)
 		JsonNode deckDB = openJson(mapper, dir + "/CollectionState.json");
 		
+		// get Deck list(ArrayNode)
 		ArrayNode deckNode = (ArrayNode) deckDB.at("/ServerState/Decks");
 		for (int i = 0; i < deckNode.size(); i++) {
 			deckList.add(new Deck(deckNode.get(i)));
 		}
+		
+		// 2. read now user selected deck information
+		JsonNode selectDeck = openJson(mapper, dir + "/PlayState.json");
+		
+		selectedDeckId = selectDeck.get("SelectedDeckId").asText("Error");
+		
+		// 3. read total number of match (win, lose, tie)
+		JsonNode match = openJson(mapper, dir + "/ProfileState.json");
+		
+		matches[0] = match.at("/ServerState/Account/WinsInPlaytestEnvironment").asInt();
+		matches[1] = match.at("/ServerState/Account/LossesInPlaytestEnvironment").asInt();
+		matches[2] = match.at("/ServerState/Account/TiesInPlaytestEnvironment").asInt();
+		
+		// sync db.json and server deck info
+		syncDatabase(mapper);
 	}
 	
 	private JsonNode openJson(ObjectMapper mapper, String dir) {
@@ -99,5 +124,63 @@ public class Database {
 		}
 		
 		return res;
+	}
+	
+	private JsonNode stringToJson(ObjectMapper mapper, String str) {
+		JsonNode res = mapper.createArrayNode();
+		
+		try {
+			res = mapper.readTree(str);
+		} catch (JsonMappingException e) {
+			e.printStackTrace();
+			System.exit(1);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		
+		return res;
+	}
+	
+	private void syncDatabase(ObjectMapper mapper) {
+		JsonNode basicNode = stringToJson(mapper, "{\"infor\" : {"
+				+ "			\"total\": 0,"
+				+ "			\"win\": 0,"
+				+ "			\"lose\": 0,"
+				+ "			\"tie\": 0,"
+				+ "			\"cube\": 0"
+				+ "		}, \"log\": [{"
+				+ "				\"who\": \"\","
+				+ "				\"state\": \"\","
+				+ "				\"cube\": 0"
+				+ "			}]}");
+		
+		// add new deck
+		for (Deck d: deckList) {
+			if (userDB.at("/" + d.id).asText("None").equals("None")) {
+				userDB.set(d.id, basicNode);
+				//userDB.set(d.id, 101); - for PrimitiveType
+			}
+		}
+		
+		// remove deleted deck
+		ArrayList<String> key = new ArrayList<>();
+		userDB.fieldNames().forEachRemaining(key::add);
+		
+		
+		for (String id: key) {
+			if(findDeck(id) == null) {
+				userDB.remove(id);
+			}
+		}
+	}
+	
+	public Deck findDeck(String deckName) {
+		for (Deck d: deckList) {
+			if (d.checkId(deckName)) {
+				return d;
+			}
+		}
+		return null;
 	}
 }
