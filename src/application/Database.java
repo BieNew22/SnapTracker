@@ -4,15 +4,16 @@
  * 				- Just like DB manager
  *              - Update user DB
  *              - Read and manage game DB
- * Date of latest update - 2023.03.29
+ * Date of latest update - 2023.04.02
  */
 
 package application;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -107,8 +108,9 @@ public class Database {
 		matches[1] = match.at("/ServerState/Account/LossesInPlaytestEnvironment").asInt();
 		matches[2] = match.at("/ServerState/Account/TiesInPlaytestEnvironment").asInt();
 		
-		// sync db.json and server deck info
+		// sync db.json and server deck info and save
 		syncDatabase(mapper);
+		storeUserDB();
 	}
 	
 	private JsonNode openJson(ObjectMapper mapper, String dir) {
@@ -169,9 +171,29 @@ public class Database {
 		
 		
 		for (String id: key) {
-			if(findDeck(id) == null) {
+			if(!id.equals("total") && findDeck(id) == null) {
 				userDB.remove(id);
 			}
+		}
+	}
+	
+	public void storeUserDB() {
+		try {
+			File file = new File("./src/db.json");
+			
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+			
+			FileWriter fw = new FileWriter(file);
+			BufferedWriter writer = new BufferedWriter(fw);
+			
+			writer.write(userDB.toPrettyString());
+			
+			writer.close();
+			
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -182,5 +204,15 @@ public class Database {
 			}
 		}
 		return null;
+	}
+	
+	public ArrayList<String> getDeckIds() {
+		ArrayList<String> result = new ArrayList<>();
+		
+		for (Deck deck: deckList) {
+			result.add(deck.id);
+		}
+		
+		return result;
 	}
 }

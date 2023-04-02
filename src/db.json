@@ -1,18 +1,109 @@
-{ 
-	"deck_name" : { 
-		"infor" : { 
-			"total": 123,
-			"win": 90,
-			"lose": 33,
-			"tie": 0,
-			"cube": -1
-		},
-		"log": [ 
-			{ 
-				"who": "who",
-				"state": "win or lost or tie",
-				"cube": -4
-			}
-		]
-	}
+{
+  "total" : {
+    "infor" : {
+      "total" : 0,
+      "win" : 0,
+      "lose" : 0,
+      "tie" : 0,
+      "cube" : 0
+    }
+  },
+  "test1" : {
+    "infor" : {
+      "total" : 0,
+      "win" : 0,
+      "lose" : 0,
+      "tie" : 0,
+      "cube" : 0
+    },
+    "log" : [ {
+      "who" : "",
+      "state" : "",
+      "cube" : 0
+    } ]
+  },
+  "test2" : {
+    "infor" : {
+      "total" : 0,
+      "win" : 0,
+      "lose" : 0,
+      "tie" : 0,
+      "cube" : 0
+    },
+    "log" : [ {
+      "who" : "",
+      "state" : "",
+      "cube" : 0
+    } ]
+  },
+  "test3" : {
+    "infor" : {
+      "total" : 0,
+      "win" : 0,
+      "lose" : 0,
+      "tie" : 0,
+      "cube" : 0
+    },
+    "log" : [ {
+      "who" : "",
+      "state" : "",
+      "cube" : 0
+    } ]
+  },
+  "test4" : {
+    "infor" : {
+      "total" : 0,
+      "win" : 0,
+      "lose" : 0,
+      "tie" : 0,
+      "cube" : 0
+    },
+    "log" : [ {
+      "who" : "",
+      "state" : "",
+      "cube" : 0
+    } ]
+  },
+  "test5" : {
+    "infor" : {
+      "total" : 0,
+      "win" : 0,
+      "lose" : 0,
+      "tie" : 0,
+      "cube" : 0
+    },
+    "log" : [ {
+      "who" : "",
+      "state" : "",
+      "cube" : 0
+    } ]
+  },
+  "test6" : {
+    "infor" : {
+      "total" : 0,
+      "win" : 0,
+      "lose" : 0,
+      "tie" : 0,
+      "cube" : 0
+    },
+    "log" : [ {
+      "who" : "",
+      "state" : "",
+      "cube" : 0
+    } ]
+  },
+  "test7" : {
+    "infor" : {
+      "total" : 0,
+      "win" : 0,
+      "lose" : 0,
+      "tie" : 0,
+      "cube" : 0
+    },
+    "log" : [ {
+      "who" : "",
+      "state" : "",
+      "cube" : 0
+    } ]
+  }
 }

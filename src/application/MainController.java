@@ -1,9 +1,17 @@
+/**
+ * Writer - 안학룡(BieNew22)
+ * Role of this file
+ * 				- control Main.fxml
+ * Date of latest update - 2023.04.02
+ */
+
+
 package application;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.text.Text;
+import javafx.scene.control.ListView;
 
 public class MainController {
 	
@@ -14,19 +22,31 @@ public class MainController {
 	private Label deckName;
 	
 	@FXML
-	private Text gameCount;
+	private Label gameCount;
 	
 	@FXML
-	private Text winCount;
+	private Label winCount;
 	
 	@FXML
-	private Text loseCount;
+	private Label loseCount;
 	
 	@FXML
-	private Text getCubes;
+	private Label getCubes;
+	
+	@FXML
+	private ListView<String> gameLogs;
 	
 	@FXML
 	public void initialize() {
-		deckName.setText("Hello world is basic!");
+		deckName.setText("Total");
+		
+		Database db = Database.getInstance();
+		
+		for (int i = 0; i < 100; i++) {
+			gameLogs.getItems().add("smaple" + i);
+		}
+		for (String id: db.getDeckIds()) {
+			gameLogs.getItems().add(id);
+		}
 	}
 }
