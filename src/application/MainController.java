@@ -2,16 +2,19 @@
  * Writer - 안학룡(BieNew22)
  * Role of this file
  * 				- control Main.fxml
- * Date of latest update - 2023.04.02
+ * Date of latest update - 2023.04.03
  */
 
 
 package application;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.layout.BorderPane;
 
 public class MainController {
 	
@@ -31,22 +34,32 @@ public class MainController {
 	private Label loseCount;
 	
 	@FXML
+	private Label tieCount;
+	
+	@FXML
 	private Label getCubes;
 	
 	@FXML
-	private ListView<String> gameLogs;
+	private ListView<BorderPane> gameLogs;
 	
 	@FXML
 	public void initialize() {
+		Database db = Database.getInstance();
 		deckName.setText("Total");
 		
+		displayDeckInfor();
+		
+		ArrayNode reString = db.getDeckLog("Total");
+	}
+	
+	public void displayDeckInfor() {
 		Database db = Database.getInstance();
 		
-		for (int i = 0; i < 100; i++) {
-			gameLogs.getItems().add("smaple" + i);
-		}
-		for (String id: db.getDeckIds()) {
-			gameLogs.getItems().add(id);
-		}
+		String deckId = deckName.getText();
+		gameCount.setText("Games : " + db.getDeckInfor(deckId, Database.TOTAL));
+		winCount.setText("Wins : " + db.getDeckInfor(deckId, Database.WIN));
+		loseCount.setText("Loses : " + db.getDeckInfor(deckId, Database.LOSE));
+		tieCount.setText("Tie : " + db.getDeckInfor(deckId, Database.TIE));
+		getCubes.setText("Cubes : " + db.getDeckInfor(deckId, Database.CUBE));
 	}
 }

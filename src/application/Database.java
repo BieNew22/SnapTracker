@@ -4,7 +4,7 @@
  * 				- Just like DB manager
  *              - Update user DB
  *              - Read and manage game DB
- * Date of latest update - 2023.04.02
+ * Date of latest update - 2023.04.03
  */
 
 package application;
@@ -23,58 +23,36 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 
-class Deck {
-	public String id = null;
-	public String name = null;
-	public ArrayList<String> cardList = new ArrayList<>();
-	
-	public Deck(JsonNode data) {
-		id = data.get("Id").asText("Error");
-		name = data.get("Name").asText("Error");
-		
-		if (id.equals("Error") || name.equals("Error")) {
-			System.out.println("deck data error");
-			System.exit(1);
-		}
-		
-		ArrayNode cards = (ArrayNode) data.get("Cards");
-		for (int i = 0; i < cards.size(); i++) {
-			cardList.add(new String(cards.get(i).get("CardDefId").asText("Erro")));
-		}
-		
-		// test print
-//		System.out.println(id + " " + name);
-//		for (int i = 0 ; i < cardList.size(); i++) {
-//			System.out.println(cardList.get(i));
-//		}
-	}
-	
-	public boolean checkId(String find) {
-		if (id.equals(find)) {
-			return true;
-		}
-		return false;
-	}
-}
-
 public class Database {
 	private static Database instance = new Database();
 	
+	// data information type
+	public static final String TOTAL = "/infor/total";
+	public static final String WIN = "/infor/win";
+	public static final String LOSE = "/infor/lose";
+	public static final String TIE = "/infor/tie";
+	public static final String CUBE = "/infor/cube";
+	public static final String LOG = "/log";
+	
+	// data from user DB
 	private ObjectNode userDB = null;
 	
+	// data from server : deckList, selectedDeckId, matches.
 	private ArrayList<Deck> deckList = new ArrayList<>();
 	
 	private String selectedDeckId = null; //PlayState.json -> SelectedDeckId
 	
-	private int[] matches = new int[3]; // 0 : win, 1 : lose, 2 : tie
+	private int[] matches = new int[3]; // 0 : win, 1 : lose, 2 : tie -> user to check is play?
 	
+	// singleton pattern
 	private Database() {}
 	
-	//basic folder : C:\Users\name\AppData\LocalLow\Second Dinner\SNAP\Standalone\States\nvprod
 	public static Database getInstance() {
 		return instance;
 	}
 
+	
+	//basic folder : C:\Users\name\AppData\LocalLow\Second Dinner\SNAP\Standalone\States\nvprod
 	public void init() {
 		ObjectMapper mapper = new ObjectMapper();
 		
@@ -84,6 +62,7 @@ public class Database {
 		//--- initialization data from marvel snap AppData ---//
 		String dir =  System.getProperty("user.dir").split("Desktop")[0] + "AppData/LocalLow/Second Dinner/"
 				+ "SNAP/Standalone/States/nvprod";
+		
 		//test directory
 		dir =  System.getProperty("user.dir").split("Desktop")[0] + "Downloads";
 		
@@ -113,6 +92,7 @@ public class Database {
 		storeUserDB();
 	}
 	
+	// open Json file, read file and return JsonNode
 	private JsonNode openJson(ObjectMapper mapper, String dir) {
 		File file = new File(dir);
 		
@@ -128,6 +108,7 @@ public class Database {
 		return res;
 	}
 	
+	// convert string to jsonNode; --it may change private function to public function--
 	private JsonNode stringToJson(ObjectMapper mapper, String str) {
 		JsonNode res = mapper.createArrayNode();
 		
@@ -144,6 +125,7 @@ public class Database {
 		return res;
 	}
 	
+	// synchronize server information and user DB.
 	private void syncDatabase(ObjectMapper mapper) {
 		JsonNode basicNode = stringToJson(mapper, "{\"infor\" : {"
 				+ "			\"total\": 0,"
@@ -171,7 +153,7 @@ public class Database {
 		
 		
 		for (String id: key) {
-			if(!id.equals("total") && findDeck(id) == null) {
+			if(!id.equals("Total") && findDeckFromServer(id) == null) {
 				userDB.remove(id);
 			}
 		}
@@ -197,7 +179,7 @@ public class Database {
 		}
 	}
 	
-	public Deck findDeck(String deckName) {
+	private Deck findDeckFromServer(String deckName) {
 		for (Deck d: deckList) {
 			if (d.checkId(deckName)) {
 				return d;
@@ -214,5 +196,48 @@ public class Database {
 		}
 		
 		return result;
+	}
+	
+	// get deck information : win, lose, tie, total matches
+	public String getDeckInfor(String deckID, String type) {
+		
+		switch (type) {
+			case TOTAL:
+			case CUBE:
+				return userDB.at("/" + deckID + type).asText();
+			case WIN:
+			case LOSE:
+			case TIE:
+				int total = userDB.at("/" + deckID + TOTAL).asInt();
+				int count = userDB.at("/" + deckID + type).asInt();
+				return String.format("%d (%.2f%%)", count, count / (double)total * 100);
+		default:
+			break;
+		}
+		
+		return "";
+	}
+	
+	// get deck match logs - incomplete
+	public ArrayNode getDeckLog(String deckID) {
+		if (!deckID.equals("Total")) {
+			return (ArrayNode) userDB.at("/" + deckID + LOG);
+		}
+		
+		System.out.println(deckID);
+		ArrayNode result = (ArrayNode) userDB.at("/" + deckID + LOG); 
+		
+		System.out.println(result.toString());
+		System.out.println(result.toString());
+		
+		ArrayList<String> ids = getDeckIds();
+		
+		
+		for (String id : ids) {
+			
+		}
+		//ArrayNode deckNode = (ArrayNode) deckDB.at("/ServerState/Decks")
+		//JsonNode node = deckNode.get(0);
+		return null;
 	}
 }
